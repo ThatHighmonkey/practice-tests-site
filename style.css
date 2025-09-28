@@ -113,6 +113,50 @@ button:disabled {
   margin-top: 10px;
 }
 
+/*
+ * Responsive design tweaks
+ *
+ * These media queries ensure the layout adapts gracefully to smaller
+ * screens (such as smartphones). The practice test pages will use
+ * the full available width, stack buttons vertically, and reduce
+ * padding on individual elements. The timer position and size are
+ * also adjusted so it remains visible without obstructing content.
+ */
+@media (max-width: 600px) {
+  /* Expand containers to full width and remove large margins */
+  #home,
+  #test-container {
+    padding: 10px;
+    max-width: 100%;
+    margin: 0;
+  }
+  /* Stack buttons vertically and expand to full width */
+  button {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+  }
+  /* Reduce timer footprint on small screens */
+  #timer {
+    top: 60px;
+    right: 10px;
+    font-size: 0.9em;
+    padding: 4px 8px;
+  }
+  /* Tighten spacing inside question blocks */
+  .question-block {
+    padding: 10px;
+  }
+  /* Adjust access gate width and margin */
+  #access-gate {
+    width: 90%;
+    margin: 20px auto;
+  }
+  #access-gate input[type="password"] {
+    width: 100%;
+  }
+}
+
 /* Feedback styling */
 .feedback {
   margin-top: 10px;
