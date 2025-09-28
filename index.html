@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CompTIA Security+ Practice Tests</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>CompTIA Security+ Practice Tests</h1>
+  </header>
+  <div id="home">
+    <h2>Welcome!</h2>
+    <p>
+      This tool generates three practice tests (90 questions each) from a pool of 240
+      questions from your uploaded exam file. Tests 1 and 2 include unique
+      questions, while Test 3 contains any remaining questions plus a random
+      selection from the first two tests. Choose a test to begin.
+    </p>
+    <div>
+      <button id="btn-test1">Start Test 1</button>
+      <button id="btn-test2">Start Test 2</button>
+      <button id="btn-test3">Start Test 3</button>
+    </div>
+  </div>
+  <div id="test-container" style="display: none;">
+    <h2 id="test-title"></h2>
+    <div id="timer" style="font-weight: bold; margin-bottom: 10px;"></div>
+    <form id="test-form"></form>
+    <div>
+      <button id="submit-test">Submit Answers</button>
+      <button id="back-home" type="button">Back Home</button>
+    </div>
+    <div id="result"></div>
+  </div>
+
+  <!-- Load the questions dataset before the main script -->
+  <script src="questions.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
