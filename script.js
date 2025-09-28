@@ -11,6 +11,17 @@
 // Questions will be populated from questions.js (questionsData)
 let questions = [];
 
+// Access control
+// List of valid access codes. You can add or remove codes as needed.
+// Only users who know one of these codes can access the practice tests.
+const validAccessCodes = [
+  // Default code for now. You can add more codes or change this value.
+  'pumpkin spice'
+];
+
+// Flag to indicate whether the user has entered a valid code.
+let accessGranted = false;
+
 // Timer variables
 let timerInterval = null;
 let remainingTime = 0; // seconds remaining
@@ -50,11 +61,45 @@ document.addEventListener('DOMContentLoaded', () => {
   // Assign questions from the loaded script
   if (typeof questionsData !== 'undefined') {
     questions = questionsData;
-    btnTest1.disabled = false;
-    btnTest2.disabled = false;
-    btnTest3.disabled = false;
+    // Only enable test buttons once questions are loaded and access has been granted
+    if (accessGranted) {
+      btnTest1.disabled = false;
+      btnTest2.disabled = false;
+      btnTest3.disabled = false;
+    }
   } else {
     console.error('questionsData is undefined. Ensure questions.js is loaded before script.js');
+  }
+
+  // Access code handling
+  const accessBtn = document.getElementById('access-code-btn');
+  if (accessBtn) {
+    accessBtn.addEventListener('click', () => {
+      const codeInputEl = document.getElementById('access-code-input');
+      const errorEl = document.getElementById('access-code-error');
+      const code = (codeInputEl.value || '').trim();
+      // Compare case-insensitively for convenience
+      const isValid = validAccessCodes.some((c) => c.toLowerCase() === code.toLowerCase());
+      if (isValid) {
+        accessGranted = true;
+        // Hide the access gate and show the home view
+        document.getElementById('access-gate').style.display = 'none';
+        document.getElementById('home').style.display = 'block';
+        // Enable test buttons if questions have loaded
+        if (questions && questions.length > 0) {
+          btnTest1.disabled = false;
+          btnTest2.disabled = false;
+          btnTest3.disabled = false;
+        }
+        // Clear any error message
+        if (errorEl) errorEl.textContent = '';
+      } else {
+        // Invalid code: show error message
+        if (errorEl) errorEl.textContent = 'Invalid code. Please try again.';
+        // Clear input for privacy
+        codeInputEl.value = '';
+      }
+    });
   }
 });
 

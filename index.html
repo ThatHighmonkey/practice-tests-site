@@ -10,11 +10,20 @@
   <header>
     <h1>CompTIA Security+ Practice Tests</h1>
   </header>
-  <div id="home">
+  <!-- Access gate: Prompt for a code before showing the tests -->
+  <div id="access-gate">
+    <h2>Enter Access Code</h2>
+    <p>Please enter the access code to continue.</p>
+    <input type="password" id="access-code-input" placeholder="Access code" />
+    <button id="access-code-btn">Enter</button>
+    <p id="access-code-error" class="error"></p>
+  </div>
+  <!-- Home/test selection container. Hidden until the user enters a valid code. -->
+  <div id="home" style="display: none;">
     <h2>Welcome!</h2>
     <p>
       This tool generates three practice tests (90 questions each) from a pool of 240
-      questions from your uploaded exam file. Tests 1 and 2 include unique
+      questions from your uploaded exam file. Tests 1 and 2 include unique
       questions, while Test 3 contains any remaining questions plus a random
       selection from the first two tests. Choose a test to begin.
     </p>
