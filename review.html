@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Review Questions</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Additional styles specific to the review page */
+    .review-question {
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    .review-question h3 {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Review Questions</h1>
+  </header>
+  <div id="review-container" style="padding: 20px;"></div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const container = document.getElementById('review-container');
+      // Retrieve review data from sessionStorage
+      let data = null;
+      try {
+        const json = sessionStorage.getItem('reviewData');
+        if (json) {
+          data = JSON.parse(json);
+        }
+      } catch (e) {
+        console.warn('Could not parse review data:', e);
+      }
+      if (!data) {
+        container.textContent = 'No review data available. Please complete a test first.';
+        return;
+      }
+      // Display summary at the top
+      const summary = document.createElement('p');
+      summary.innerHTML =
+        `<strong>Test ${data.testIndex} Results</strong><br>` +
+        `Score: ${data.correctCount} / ${data.total} (${data.percent}%) - ` +
+        (data.pass ? '<span class="correct">Pass</span>' : '<span class="incorrect">Fail</span>');
+      container.appendChild(summary);
+      // Iterate over each question and display details
+      data.questions.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'review-question';
+        const heading = document.createElement('h3');
+        heading.textContent = `Q${idx + 1}: ${item.question}`;
+        div.appendChild(heading);
+        if (item.correct === null) {
+          // Ungraded question
+          const p = document.createElement('p');
+          p.innerHTML = '<em>This question was ungraded (no definitive answer).</em>';
+          div.appendChild(p);
+        } else {
+          const pAnswer = document.createElement('p');
+          pAnswer.innerHTML = `<strong>Your answer:</strong> ` + (item.userAnswer && item.userAnswer.length > 0 ? item.userAnswer.join(', ') : 'No answer');
+          div.appendChild(pAnswer);
+          const pCorrect = document.createElement('p');
+          pCorrect.innerHTML = `<strong>Correct answer:</strong> ` + item.correctAnswer.split('').join(', ');
+          div.appendChild(pCorrect);
+          const pResult = document.createElement('p');
+          pResult.innerHTML = 'Result: ' + (item.correct ? '<span class="correct">Correct</span>' : '<span class="incorrect">Incorrect</span>');
+          div.appendChild(pResult);
+        }
+        if (item.explanation) {
+          const pExpl = document.createElement('p');
+          pExpl.innerHTML = `<em>${item.explanation}</em>`;
+          div.appendChild(pExpl);
+        }
+        container.appendChild(div);
+      });
+    });
+  </script>
+</body>
+</html>

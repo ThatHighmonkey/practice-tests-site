@@ -381,33 +381,111 @@ function submitAnswers(event) {
   });
   // Build summary. Use gradedTotal for denominator to avoid penalizing ungraded questions
   const scorePercent = gradedTotal > 0 ? Math.round((correctCount / gradedTotal) * 100) : 0;
+  // Determine pass/fail based on 83% threshold
+  const passed = scorePercent >= 83;
+  // Clear any previous result contents
+  resultEl.innerHTML = '';
+  // Create and insert heading summarizing score and pass/fail
   const summary = document.createElement('p');
-  summary.innerHTML = `<strong>Score:</strong> ${correctCount} / ${gradedTotal} (${scorePercent}%)`;
+  summary.innerHTML = `<strong>Score:</strong> ${correctCount} / ${gradedTotal} (${scorePercent}%). ` +
+    (passed ? '<span class="correct">Pass</span>' : '<span class="incorrect">Fail</span>') +
+    ' (83% required to pass)';
   resultEl.appendChild(summary);
-  // Provide detailed feedback for each graded question
-  const details = document.createElement('div');
+  // Prepare a container for the pie chart
+  const chartWrapper = document.createElement('div');
+  chartWrapper.style.maxWidth = '400px';
+  chartWrapper.style.margin = '20px auto';
+  const canvas = document.createElement('canvas');
+  canvas.id = 'resultChart';
+  canvas.width = 400;
+  canvas.height = 400;
+  chartWrapper.appendChild(canvas);
+  resultEl.appendChild(chartWrapper);
+  // Render the pie chart using Chart.js. Show correct vs incorrect counts.
+  const incorrectCount = gradedTotal - correctCount;
+  const ctx = canvas.getContext('2d');
+  // Destroy existing chart if any (avoid stacking multiple charts on repeated submissions)
+  if (window.resultChartInstance) {
+    window.resultChartInstance.destroy();
+  }
+  window.resultChartInstance = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: ['Correct', 'Incorrect'],
+      datasets: [
+        {
+          data: [correctCount, incorrectCount],
+          backgroundColor: ['#4caf50', '#f44336'],
+          hoverBackgroundColor: ['#66bb6a', '#e57373']
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+  // Build review data to store for a separate review page
+  const reviewData = {
+    correctCount: correctCount,
+    total: gradedTotal,
+    percent: scorePercent,
+    pass: passed,
+    testIndex: currentTestIndex + 1,
+    questions: []
+  };
+  // Collect per-question details for review
   test.forEach((q, idx) => {
-    const answerStr = (q.answer || '').replace(/\s+/g, '');
-    const p = document.createElement('p');
-    if (answerStr.length === 0) {
-      p.innerHTML = `<strong>Q${idx + 1}:</strong> <em>Ungraded question</em>`;
-      details.appendChild(p);
+    const ansStr = (q.answer || '').replace(/\s+/g, '');
+    const answerSet = new Set(ansStr.split(''));
+    const selectedInputs = document.querySelectorAll(`input[name="q${idx}"]:checked`);
+    const selectedSet = Array.from(selectedInputs).map((inp) => inp.value);
+    let isCorrect = false;
+    if (ansStr.length === 0) {
+      // ungraded
+      reviewData.questions.push({
+        question: q.question,
+        correct: null,
+        correctAnswer: ansStr,
+        userAnswer: [],
+        explanation: q.explanation || ''
+      });
       return;
     }
-    const answerSet = new Set(answerStr.split(''));
-    const selectedInputs = document.querySelectorAll(`input[name="q${idx}"]:checked`);
-    const selectedSet = new Set(Array.from(selectedInputs).map((inp) => inp.value));
-    let isCorrect = false;
     if (answerSet.size > 1) {
-      if (selectedSet.size === answerSet.size) {
-        isCorrect = Array.from(selectedSet).every((val) => answerSet.has(val));
+      if (selectedSet.length === answerSet.size) {
+        isCorrect = selectedSet.every((val) => answerSet.has(val));
       }
     } else {
       const answer = Array.from(answerSet)[0];
-      isCorrect = selectedSet.has(answer);
+      isCorrect = selectedSet.includes(answer);
     }
-    p.innerHTML = `<strong>Q${idx + 1}:</strong> ${isCorrect ? '<span class="correct">Correct</span>' : '<span class="incorrect">Incorrect</span>'}`;
-    details.appendChild(p);
+    reviewData.questions.push({
+      question: q.question,
+      correct: isCorrect,
+      correctAnswer: ansStr,
+      userAnswer: selectedSet,
+      explanation: q.explanation || ''
+    });
   });
-  resultEl.appendChild(details);
+  // Store review data in sessionStorage for the review page
+  try {
+    sessionStorage.setItem('reviewData', JSON.stringify(reviewData));
+  } catch (e) {
+    console.warn('Could not store review data:', e);
+  }
+  // Add a button to allow the user to review detailed results on a separate page
+  const reviewBtn = document.createElement('button');
+  reviewBtn.id = 'review-btn';
+  reviewBtn.textContent = 'Review Questions';
+  reviewBtn.style.marginTop = '10px';
+  reviewBtn.addEventListener('click', () => {
+    // Navigate to the review page
+    window.location.href = 'review.html';
+  });
+  resultEl.appendChild(reviewBtn);
 }
